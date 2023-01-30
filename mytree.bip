@@ -1,0 +1,65 @@
+MODULE main
+	port type sync
+	atomic type condition
+		export port sync tick
+	end
+
+	atomic type action
+	end
+
+	atomic type  sequence
+	end
+
+	atomic type fallback
+	end
+
+	connector type rendezvous(sync p1,sync p2)
+		define [p1 p2]
+	end
+
+	compound type system
+		component condition low_power,in_storm
+		component condition unfold_panels,in_hibernate,get_data,send_data
+		component condition sequences_1,sequences_2,sequences_3
+		component condition root_fallback
+
+		connector rendezvous sequences_1_to_low_power_tick(sequences_1.tick1,low_power.tick)
+		connector rendezvous sequences_1_to_low_power_success(sequences_1.success1,low_power.success)
+		connector rendezvous sequences_1_to_low_power_failure(sequences_1.failure1,low_power.failure)
+		connector rendezvous sequences_1_to_low_power_running(sequences_1.running1,low_power.running)
+		connector rendezvous sequences_1_to_unfold_panels_tick(sequences_1.tick2,unfold_panels.tick)
+		connector rendezvous sequences_1_to_unfold_panels_success(sequences_1.success2,unfold_panels.success)
+		connector rendezvous sequences_1_to_unfold_panels_failure(sequences_1.failure2,unfold_panels.failure)
+		connector rendezvous sequences_1_to_unfold_panels_running(sequences_1.running2,unfold_panels.running)
+		connector rendezvous sequences_2_to_in_storm_tick(sequences_2.tick1,in_storm.tick)
+		connector rendezvous sequences_2_to_in_storm_success(sequences_2.success1,in_storm.success)
+		connector rendezvous sequences_2_to_in_storm_failure(sequences_2.failure1,in_storm.failure)
+		connector rendezvous sequences_2_to_in_storm_running(sequences_2.running1,in_storm.running)
+		connector rendezvous sequences_2_to_in_hibernate_tick(sequences_2.tick2,in_hibernate.tick)
+		connector rendezvous sequences_2_to_in_hibernate_success(sequences_2.success2,in_hibernate.success)
+		connector rendezvous sequences_2_to_in_hibernate_failure(sequences_2.failure2,in_hibernate.failure)
+		connector rendezvous sequences_2_to_in_hibernate_running(sequences_2.running2,in_hibernate.running)
+		connector rendezvous sequences_3_to_get_data_tick(sequences_3.tick1,get_data.tick)
+		connector rendezvous sequences_3_to_get_data_success(sequences_3.success1,get_data.success)
+		connector rendezvous sequences_3_to_get_data_failure(sequences_3.failure1,get_data.failure)
+		connector rendezvous sequences_3_to_get_data_running(sequences_3.running1,get_data.running)
+		connector rendezvous sequences_3_to_send_data_tick(sequences_3.tick2,send_data.tick)
+		connector rendezvous sequences_3_to_send_data_success(sequences_3.success2,send_data.success)
+		connector rendezvous sequences_3_to_send_data_failure(sequences_3.failure2,send_data.failure)
+		connector rendezvous sequences_3_to_send_data_running(sequences_3.running2,send_data.running)
+
+		connector rendezvous root_fallback_to_sequences_1_tick(root_fallback.tick1,sequences_1.tick)
+		connector rendezvous root_fallback_to_sequences_1_success(root_fallback.success1,sequences_1.success)
+		connector rendezvous root_fallback_to_sequences_1_failure(root_fallback.failure1,sequences_1.failure)
+		connector rendezvous root_fallback_to_sequences_1_running(root_fallback.running1,sequences_1.running)
+		connector rendezvous root_fallback_to_sequences_2_tick(root_fallback.tick2,sequences_2.tick)
+		connector rendezvous root_fallback_to_sequences_2_success(root_fallback.success2,sequences_2.success)
+		connector rendezvous root_fallback_to_sequences_2_failure(root_fallback.failure2,sequences_2.failure)
+		connector rendezvous root_fallback_to_sequences_2_running(root_fallback.running2,sequences_2.running)
+		connector rendezvous root_fallback_to_sequences_3_tick(root_fallback.tick3,sequences_3.tick)
+		connector rendezvous root_fallback_to_sequences_3_success(root_fallback.success3,sequences_3.success)
+		connector rendezvous root_fallback_to_sequences_3_failure(root_fallback.failure3,sequences_3.failure)
+		connector rendezvous root_fallback_to_sequences_3_running(root_fallback.running3,sequences_3.running)
+	end
+	component system sys
+end
