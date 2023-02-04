@@ -1,0 +1,78 @@
+model main
+	port type sync
+
+	atomic type sequences_1
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		export port sync success1
+		export port sync failure1
+		export port sync tick1
+		export port sync running1
+		export port sync success2
+		export port sync failure2
+		export port sync tick2
+		export port sync running2
+		place l0,l1,l11,l2,l22,l3,lr,lf
+		initial to l0 
+		on tick from l0 to l1
+		on success from l3 to l0
+		on failure from lf to l0
+		on running from lr to l0
+		on tick1 from l1 to l11
+		on success1 from l11 to l2
+		on failure1 from l11 to lf
+		on running1 from l11 to lr
+		on tick2 from l2 to l22
+		on success2 from l22 to l3
+		on failure2 from l22 to lf
+		on running2 from l22 to lr
+	end
+
+	atomic type low_power
+		
+		export port sync success
+		export port sync failure
+		export port sync tick
+
+		place l0,l1 
+		initial to l0 
+		on tick from l0 to l1 
+		on success from l1 to l0 
+		on failure from l1 to l0
+	end
+
+	connector type rendezvous2(sync p1,sync p2)
+		define [p1 p2]
+	end
+
+	connector type single(sync p)
+		define [p]
+	end
+
+
+	compound type system
+
+		component sequences_1 sequences1
+		component low_power low_power_c
+
+		connector rendezvous2 tick(sequences1.tick1, low_power_c.tick)
+		connector rendezvous2 success(sequences1.success1, low_power_c.success)
+		connector rendezvous2 failure(sequences1.failure1, low_power_c.failure)
+		connector single running(sequences1.running1)
+
+		connector single unfold_panels_tick(sequences1.tick2)
+		connector single unfold_panels_success(sequences1.success2)
+		connector single unfold_panels_failure(sequences1.failure2)
+		connector single unfold_panels_running(sequences1.running2)
+
+		connector single root_fallback_1_tick(sequences1.tick)
+		connector single root_fallback_1_success(sequences1.success)
+		connector single root_fallback_1_failure(sequences1.failure)
+		connector single root_fallback_1_running(sequences1.running)
+
+	end
+
+	component system sys
+end
