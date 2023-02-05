@@ -85,7 +85,7 @@ model main
 		on tick from l0 to l1 
 		on success from l1 to l0 
 		on failure from l1 to l0 
-		on running from l1 to l0 provided(0)
+		on running from l1 to l0 provided(false)
 	end
 
 	atomic type unfold_panels
@@ -142,7 +142,7 @@ model main
 		on tick from l0 to l1 
 		on success from l1 to l0 
 		on failure from l1 to l0
-		on running from l1 to l0 provided(0)
+		on running from l1 to l0 provided(false)
 	end
 
 	atomic type in_hibernate
