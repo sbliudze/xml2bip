@@ -132,16 +132,16 @@ model main
 	end
 
 	atomic type in_storm
-		
+		data bool storm
 		export port sync success
 		export port sync failure
 		export port sync tick
 		export port sync running
 		place l0,l1 
-		initial to l0 
+		initial to l0 do {storm = true;}
 		on tick from l0 to l1 
-		on success from l1 to l0 
-		on failure from l1 to l0
+		on success from l1 to l0 provided(storm)
+		on failure from l1 to l0 provided(!storm)
 		on running from l1 to l0 provided(false)
 	end
 
