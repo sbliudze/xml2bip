@@ -3,28 +3,27 @@
 #include <string>
 #include <functional>  
 #include "tinyxml2.h"
-
+#include <unistd.h>
+#include <getopt.h>
 #include <vector>
  
-
-// function to be called recursively
-int tree_num = -1;
-int condition_num =0;
-int action_num =0;
-int sequence_num =0;
-int fallback_num =0;
-std::vector<std::string> Vector_condition,Vector_action;
-std::vector<std::vector<std::string> >Vector_sequence,Vector_fallback;
-
-auto ChildrenCount = [](const tinyxml2::XMLElement* parent_node) 
+struct Node_Name
 {
-    int count = 0;
-    for (auto node = parent_node->FirstChildElement(); node != nullptr;
-            node = node->NextSiblingElement())
-    {
-        count++;
-    }
-    return count;
+    std::vector<std::string> Vector_condition;
+    std::vector<std::string> Vector_action;
+    std::vector<std::vector<std::string> > Vector_sequence;
+    std::vector<std::vector<std::string> > Vector_fallback;
+};
+
+int tree_num = -1;
+
+struct Node_Number
+{
+    int all_num;
+    int condition_num;
+    int action_num;
+    int sequence_num;
+    int fallback_num;
 };
 
 auto StrEqual = [](const char* str1, const char* str2) -> bool 
@@ -47,13 +46,10 @@ auto subChildrenCount = [](const tinyxml2::XMLElement* parent_node)
 // 计算所有子节点数
 int allsubChildrenCount (tinyxml2::XMLElement* parent_node,int &all_sub_num) 
 {
-    // int all_sub_num = 0;
     for (tinyxml2::XMLElement* currentele = parent_node->FirstChildElement(); currentele; currentele = currentele->NextSiblingElement())
 	{
 	    all_sub_num ++;
         tinyxml2::XMLElement* tmpele = currentele;
-
-        const int children_count = ChildrenCount(tmpele);
         const char* name = tmpele->Name();
 	    if (!tmpele->NoChildren())
 		    allsubChildrenCount(tmpele,all_sub_num);
@@ -61,7 +57,7 @@ int allsubChildrenCount (tinyxml2::XMLElement* parent_node,int &all_sub_num)
     return all_sub_num;
 };
 
-//子树是否有复合节点
+//给定节点的子节点中的复合节点的个数
 auto subChildHaveComposite = [](const tinyxml2::XMLElement* parent_node) 
 {
     int count = 0;
@@ -73,528 +69,200 @@ auto subChildHaveComposite = [](const tinyxml2::XMLElement* parent_node)
         }
     }
     return count;
-    
 };
 
-// 将源文件中的特定字符串替换,内容输出到新文件中
-bool FileStringReplace(std::ifstream &instream, std::ofstream &outstream,int &tree_num)
+void conditionPrint(const char* node_name,int &tree_num,tinyxml2::XMLElement* tree_node,std::string &output_filename)
 {
-	std::string str;
-	size_t pos = 0;
-	while (getline(instream, str)) // 按行读取
-	{
-		pos = str.find("**"); // 查找每一行中的"Tom"
-		if (pos != std::string::npos)
-		{
-			str = str.replace(pos, 2, std::to_string(tree_num)); // 将Tom替换为Jerry
-			outstream << str << std::endl;
-			continue;
-		}
-		outstream << str << std::endl;
-	}
-	return true;
+    std::ofstream outfile(output_filename,std::ios::app);
+
+    if(!outfile.is_open())
+        std::cout << "open file faileure" << std::endl;
+
+    outfile << "\tatomic type " << tree_node->Attribute( "name" ) << std::endl;
+    // outfile << "\t\tdata int x\n";
+    outfile << "\t\texport port sync success" << "\n";
+    outfile << "\t\texport port sync failure" << "\n";
+    outfile << "\t\texport port sync tick" << "\n";
+    outfile << "\t\texport port sync running" << "\n";
+
+    outfile << "\t\tplace l0,l1 " << "\n";
+    outfile << "\t\tinitial to l0 " << "\n";
+    outfile << "\t\ton tick from l0 to l1 " << "\n";
+    outfile << "\t\ton success from l1 to l0 " << "\n";
+    outfile << "\t\ton failure from l1 to l0 " << "\n";
+    outfile << "\tend" << "\n";
+
+    outfile << std::endl;
+    outfile.close();
 }
 
-// void conditionPrint(const char* node_name,int &tree_num)
-// {
-//     std::ofstream outfile("../mytree.bip",std::ios::app);
-//     // outfile.open
-//     if(!outfile.is_open())
-//         std::cout << "open file faileure" << std::endl;
-//     outfile << "MODULE " << node_name << "(tick)" << std::endl;
-
-//     //先写入在
-//     std::ofstream condition("../cache/condition_" + std::to_string(tree_num) + ".txt");//,std::ios::app);
-
-//     // std::ofstream outfile("../condition_.txt");
-//     std::ifstream condition_file("../condition.txt",std::ios::app);
-    
-//     FileStringReplace(condition_file,condition,tree_num);
-
-//     std::ifstream condition_in("../cache/condition_" + std::to_string(tree_num) + ".txt");//,std::ios::app);
-//     std::string temp;
-//     if(!condition.is_open())
-//         std::cout << "open condition file faileure" << std::endl;
-//     while(getline(condition_in, temp))
-//     {
-//         outfile << temp;
-//         outfile << std::endl;  
-//     }
-
-//     outfile << std::endl;
-//     outfile.close();
-// }
-
-// void actionPrint(const char* node_name,int &tree_num)
-// {
-//     std::ofstream outfile("../mytree.bip",std::ios::app);
-//     // outfile.open
-//     if(!outfile.is_open())
-//         std::cout << "open file faileure" << std::endl;
-//     outfile << "MODULE " << node_name << "(tick)"  << std::endl;
-
-    
-//     //先写入在
-//     std::ofstream action("../cache/action_" + std::to_string(tree_num) + ".txt");//,std::ios::app);
-
-//     // std::ofstream outfile("../condition_.txt");
-//     std::ifstream action_file("../action.txt",std::ios::app);
-    
-//     FileStringReplace(action_file,action,tree_num);
-
-//     std::ifstream action_in("../cache/action_" + std::to_string(tree_num) + ".txt");//,std::ios::app);
-//     std::string temp;
-//     if(!action.is_open())
-//         std::cout << "open action file faileure" << std::endl;
-//     while(getline(action_in, temp))
-//     {
-//         outfile << temp;
-//         outfile << std::endl;  
-//     }
-
-//     outfile << std::endl;
-//     outfile.close();
-// }
-
-// void fallbackPrint(const char* node_name,std::vector<std::string>& seq,int &tree_num,tinyxml2::XMLElement* tree_node)
-// {
-//     std::ofstream outfile("../mytree.bip",std::ios::app);
-//     // outfile.open
-//     if(!outfile.is_open())
-//         std::cout << "open file faileure" << std::endl;
-//     outfile << "MODULE " << node_name << "(para_tick)" << std::endl;
-//     outfile << "VAR" << "\n";
-//     int sub_nums = subChildrenCount(tree_node);//下一层子节点
-
-//     // outfile << "\t" << "tick:{" << tree_num ;
-//     int all_sub_trees = tree_num;
-//     std::vector<int> No_tree;
-//     for (auto node = tree_node->FirstChildElement();node != nullptr;node = node->NextSiblingElement())
-//     {
-//         int sub_num = 0;
-//         all_sub_trees  = all_sub_trees + 1;   
-//         // outfile << ","  << all_sub_trees;
-//         No_tree.push_back(all_sub_trees);
-//         all_sub_trees = all_sub_trees + allsubChildrenCount(node,sub_num);
-//     }
-//     // outfile << "}; \n";
-//     outfile << "\n";
-
-//     outfile << "\t" << "status:{idle,success,failure};" << std::endl;
-//     outfile << "\t" << "state:{sta_init,succeed,failed";
-
-//     for(std::vector<int>::iterator it = No_tree.begin();it != No_tree.end();it++)
-//     {
-//         outfile << ",tick" << *it;
-//     }
-
-//     outfile << "}; \n";
-
-//     int seq_num = 0;
-//     for(std::vector<std::string>::iterator it = seq.begin();it != seq.end();it++)
-//     {
-//         outfile << "\t" << "s" << No_tree.at(seq_num) << ":" << *it << "(tick);" << std::endl;
-//         seq_num ++;
-//     }
-//     outfile << "ASSIGN" << "\n"
-//             << "\t" << "init(status) := idle;" << "\n"
-//             << "\t" << "init(state) := sta_init;" << "\n"
-//             << "\t" << "init(tick) := " << tree_num << ";\n";
-        
-//     outfile << "\t" << "next(state) :=" 
-//             << "\n\t\t" << "case\n";
-
-//     outfile << "\t\t\t" << "state = sta_init: tick" << tree_num+1 << ";\n";
-
-//     for(int i = 0;i < sub_nums;i++)
-//     {
-         
-//          outfile << "\t\t\t" << "state = tick" << No_tree.at(i) << " & s" << No_tree.at(i) << ".status = failure : ";
-//          if(i +1 == sub_nums)
-//          {
-//              outfile << "failed;\n";
-//          }
-//          else
-//          {
-//              outfile << "tick" << No_tree.at(i+1) << ";\n";
-//          }
-//         outfile << "\t\t\t" << "state = tick" << No_tree.at(i) << " & s" << No_tree.at(i) << ".status = success :succeed;\n";
-
-//     }
-//     outfile << "\t\t\t" << "state = failed :sta_init; \n"
-//             << "\t\t\t" << "state = succeed :sta_init; \n"
-//             << "\t\t\t" << "TRUE:state;\n" 
-//             << "\t\t" << "esac;\n";
-
-//     outfile << "\t" << "next(status) := \n"
-//             << "\t\t" << "case\n" 
-//             << "\t\t\t" << "state = succeed : success; \n"
-//             << "\t\t\t" << "state = failed : failure; \n"
-//             << "\t\t\t" << "TRUE:idle;\n" 
-//             << "\t\t" << "esac;\n";
-//     outfile << "\tnext(tick):=\n"
-//             << "\t\t" << "case\n";
-
-//     for(int i = 0;i < sub_nums;i++)
-//     {
-//          outfile << "\t\t\t" << "state = tick" <<  No_tree.at(i) << " : " <<  No_tree.at(i) << ";"<<"\n";
-//     }
-//     outfile << "\t\t\t" << "TRUE:tick;\n"
-//             << "\t\t" << "esac;\n";
-
-//     outfile << std::endl;
-//     outfile.close();
-// }
-
-// void sequencePrint(const char* node_name,std::vector<std::string>& seq,int &tree_num,tinyxml2::XMLElement* tree_node)
-// {
-//     std::ofstream outfile("../mytree.bip",std::ios::app);
-//     // outfile.open
-//     if(!outfile.is_open())
-//         std::cout << "open file faileure" << std::endl;
-//     outfile << "MODULE " << node_name << "(para_tick)" << std::endl;
-//     outfile << "VAR" << "\n";
-//     int sub_nums = subChildrenCount(tree_node);//下一层子节点
-
-//     // outfile << "\t" << "tick:{" << tree_num ;
-//     int all_sub_trees = tree_num;
-//     std::vector<int> No_tree;
-//     for (auto node = tree_node->FirstChildElement();node != nullptr;node = node->NextSiblingElement())
-//     {
-//         int sub_num = 0;
-//         all_sub_trees  = all_sub_trees + 1;   
-//         // outfile << ","  << all_sub_trees;
-//         No_tree.push_back(all_sub_trees);
-//         all_sub_trees = all_sub_trees + allsubChildrenCount(node,sub_num);
-//     }
-//     // outfile << "}; \n";
-//     outfile << "\n";
-
-//     outfile << "\t" << "status:{idle,success,failure};" << std::endl;
-//     outfile << "\t" << "state:{sta_init,succeed,failed";
-
-//     for(std::vector<int>::iterator it = No_tree.begin();it != No_tree.end();it++)
-//     {
-//         outfile << ",tick" << *it;
-//     }
-
-//     outfile << "}; \n";
-
-//     int seq_num = 0;
-//     for(std::vector<std::string>::iterator it = seq.begin();it != seq.end();it++)
-//     {
-//         outfile << "\t" << "s" << No_tree.at(seq_num) << ":" << *it << "(tick);" << std::endl;
-//         seq_num ++;
-//     }
-//     outfile << "ASSIGN" << "\n"
-//             << "\t" << "init(status) := idle;" << "\n"
-//             << "\t" << "init(state) := sta_init;" << "\n"
-//             << "\t" << "init(tick) := " << tree_num << ";\n";
-        
-//     outfile << "\t" << "next(state) :=" 
-//             << "\n\t\t" << "case\n";
-
-//     outfile << "\t\t\t" << "state =  sta_init: tick" << tree_num+1 << ";\n";
-
-//     for(int i = 0;i < sub_nums;i++)
-//     {
-         
-//          outfile << "\t\t\t" << "state =  tick" << No_tree.at(i) << " & s" << No_tree.at(i) << ".status = success : ";
-//          if(i +1 == sub_nums)
-//          {
-//              outfile << "succeed;\n";
-//          }
-//          else
-//          {
-//              outfile << "tick" << No_tree.at(i+1) << ";\n";
-//          }
-//         outfile << "\t\t\t" << "state =  tick" << No_tree.at(i) << " & s" << No_tree.at(i) << ".status = failure : failed;\n";
-
-//     }
-//     outfile << "\t\t\t" << "state = failed : sta_init; \n"
-//             << "\t\t\t" << "state = succeed : sta_init; \n"
-//             << "\t\t\t" << "TRUE:state;\n" 
-//             << "\t\t" << "esac;\n";
-
-//     outfile << "\t" << "next(status) := \n"
-//             << "\t\t" << "case\n" 
-//             << "\t\t\t" << "state = succeed : success; \n"
-//             << "\t\t\t" << "state = failed : failure; \n"
-//             << "\t\t\t" << "TRUE:idle;\n" 
-//             << "\t\t" << "esac;\n";
-//     outfile << "\tnext(tick):=\n"
-//             << "\t\t" << "case\n";
-
-//     for(int i = 0;i < sub_nums;i++)
-//     {
-//          outfile << "\t\t\t" << "state = tick" <<  No_tree.at(i) << " : " <<  No_tree.at(i) << ";"<<"\n";
-//     }
-//     outfile << "\t\t\t" << "TRUE:tick;\n"
-//             << "\t\t" << "esac;\n";
-
-//     outfile << std::endl;
-//     outfile.close();
-// }
-
-// void parallelPrint(const char* node_name,std::vector<std::string>& seq,int &tree_num,tinyxml2::XMLElement* tree_node)
-// {
-//     std::ofstream outfile("../mytree.bip",std::ios::app);
-//     // outfile.open
-//     if(!outfile.is_open())
-//         std::cout << "open file faileure" << std::endl;
-//     outfile << "MODULE " << node_name << "(para_tick)" << std::endl;
-//     outfile << "VAR" << "\n";
-//     int sub_nums = subChildrenCount(tree_node);//下一层子节点
-
-//     // outfile << "\t" << "tick:{" << tree_num ;
-//     int all_sub_trees = tree_num;
-//     std::vector<int> No_tree;
-//     for (auto node = tree_node->FirstChildElement();node != nullptr;node = node->NextSiblingElement())
-//     {
-//         int sub_num = 0;
-//         all_sub_trees  = all_sub_trees + 1;   
-//         // outfile << ","  << all_sub_trees;
-//         No_tree.push_back(all_sub_trees);
-//         all_sub_trees = all_sub_trees + allsubChildrenCount(node,sub_num);
-//     }
-//     // outfile << "}; \n";
-//     outfile << "\n";
-
-//     outfile << "\t" << "status:{idle,success,failure};" << std::endl;
-//     outfile << "\t" << "state:{sta_init,succeed,failed";
-
-//     for(std::vector<int>::iterator it = No_tree.begin();it != No_tree.end();it++)
-//     {
-//         outfile << ",tick" << *it;
-//     }
-
-//     outfile << "}; \n";
-
-//     int seq_num = 0;
-//     for(std::vector<std::string>::iterator it = seq.begin();it != seq.end();it++)
-//     {
-//         outfile << "\t" << "s" << No_tree.at(seq_num) << ":" << *it << "(tick);" << std::endl;
-//         seq_num ++;
-//     }
-//     outfile << "ASSIGN" << "\n"
-//             << "\t" << "init(status) := idle;" << "\n"
-//             << "\t" << "init(state) := sta_init;" << "\n"
-//             << "\t" << "init(tick) := " << tree_num << ";\n";
-        
-//     outfile << "\t" << "next(state) :=" 
-//             << "\n\t\t" << "case\n";
-
-//     outfile << "\t\t\t" << "state =  sta_init: tick" << tree_num+1 << ";\n";
-
-//     for(int i = 0;i < sub_nums;i++)
-//     {
-         
-//          outfile << "\t\t\t" << "state =  tick" << No_tree.at(i) << " & s" << No_tree.at(i) << ".status = success : ";
-//          if(i +1 == sub_nums)
-//          {
-//              outfile << "succeed;\n";
-//          }
-//          else
-//          {
-//              outfile << "tick" << No_tree.at(i+1) << ";\n";
-//          }
-//         outfile << "\t\t\t" << "state =  tick" << No_tree.at(i) << " & s" << No_tree.at(i) << ".status = failure : failed;\n";
-
-//     }
-//     outfile << "\t\t\t" << "state = failed : sta_init; \n"
-//             << "\t\t\t" << "state = succeed : sta_init; \n"
-//             << "\t\t\t" << "TRUE:state;\n" 
-//             << "\t\t" << "esac;\n";
-
-//     outfile << "\t" << "next(status) := \n"
-//             << "\t\t" << "case\n" 
-//             << "\t\t\t" << "state = succeed : success; \n"
-//             << "\t\t\t" << "state = failed : failure; \n"
-//             << "\t\t\t" << "TRUE:idle;\n" 
-//             << "\t\t" << "esac;\n";
-//     outfile << "\tnext(tick):=\n"
-//             << "\t\t" << "case\n";
-
-//     for(int i = 0;i < sub_nums;i++)
-//     {
-//          outfile << "\t\t\t" << "state = tick" <<  No_tree.at(i) << " : " <<  No_tree.at(i) << ";"<<"\n";
-//     }
-//     outfile << "\t\t\t" << "TRUE:tick;\n"
-//             << "\t\t" << "esac;\n";
-
-//     outfile << std::endl;
-//     outfile.close();
-// }
-
-void node_num(tinyxml2::XMLElement * element)
+void actionPrint(const char* node_name,int &tree_num,tinyxml2::XMLElement* tree_node,std::string &output_filename)
 {
+    std::ofstream outfile(output_filename,std::ios::app);
+ 
+    if(!outfile.is_open())
+        std::cout << "open file faileure" << std::endl;
 
-    for (tinyxml2::XMLElement* currentele = element->FirstChildElement(); currentele; currentele = currentele->NextSiblingElement())
+    outfile << "\tatomic type " << tree_node->Attribute( "name" ) << std::endl;
+    // outfile << "\t\tdata int x\n";
+    outfile << "\t\texport port sync success" << "\n";
+    outfile << "\t\texport port sync failure" << "\n";
+    outfile << "\t\texport port sync tick" << "\n";
+    outfile << "\t\texport port sync running" << "\n";
+
+    outfile << "\t\tplace l0,l1 " << "\n";
+    outfile << "\t\tinitial to l0 " << "\n";
+    outfile << "\t\ton tick from l0 to l1 do {}" << "\n";
+    outfile << "\t\ton success from l1 to l0 " << "\n";
+    outfile << "\t\ton failure from l1 to l0 " << "\n";
+    outfile << "\t\ton running from l1 to l0 provided(0)" << "\n";
+    outfile << "\tend" << "\n";
+
+    outfile << std::endl;
+    outfile.close();
+}
+
+void fallbackPrint(const char* node_name,std::vector<std::string>& seq,int &tree_num,tinyxml2::XMLElement* tree_node,std::string &output_filename)
+{
+    std::ofstream outfile(output_filename,std::ios::app);
+
+    if(!outfile.is_open())
+        std::cout << "open file faileure" << std::endl;
+    outfile << "\tatomic type " << tree_node->Attribute( "name" ) << std::endl;
+    outfile << "\t\texport port sync success" << "\n";
+    outfile << "\t\texport port sync failure" << "\n";
+    outfile << "\t\texport port sync tick" << "\n";
+    outfile << "\t\texport port sync running" << "\n";
+    
+    int sub_nums = subChildrenCount(tree_node);//下一层子节点
+    for(int i =1;i <= sub_nums;i++)
+    {
+        outfile << "\t\texport port sync success" << i << "\n";
+        outfile << "\t\texport port sync failure" << i << "\n";
+        outfile << "\t\texport port sync tick" << i << "\n";
+        outfile << "\t\texport port sync running" << i << "\n";
+    }
+
+    outfile << "\t\tplace l0";
+    for(int i =0;i < sub_nums;i++)
+        outfile << ",l" << i+1 << ",l" << i+1 << i+1;
+    outfile << ",l" << sub_nums+1 << ",lf,lr" << std::endl;
+
+    outfile << "\t\tinitial to l0" << std::endl;
+
+
+    outfile << "\t\ton tick from l0 to l1\n";
+    outfile << "\t\ton failure from l" << sub_nums +1 << " to l0\n";
+    outfile << "\t\ton success from lf to l0\n";
+    outfile << "\t\ton running from lr to l0\n";
+
+    for(int i =0;i < sub_nums;i++)
+    {
+        outfile << "\t\ton tick" << i+1 << " from l" << i+1 << " to l" << i+1 << i+1 << "\n";
+        outfile << "\t\ton failure" << i+1 << " from l" << i+1 << i+1 << " to l" << i +2 << "\n";
+        outfile << "\t\ton success" << i+1 << " from l" << i+1 << i+1 << " to lf\n";
+        outfile << "\t\ton running" << i+1 << " from l" << i+1 << i+1 << " to lr\n";
+    }
+
+    outfile <<"\tend\n\n";
+    outfile.close();
+}
+
+void sequencePrint(const char* node_name,std::vector<std::string>& seq,int &tree_num,tinyxml2::XMLElement* tree_node,std::string &output_filename)
+{
+    std::ofstream outfile(output_filename,std::ios::app);
+
+    if(!outfile.is_open())
+        std::cout << "open file faileure" << std::endl;
+    outfile << "\tatomic type " << tree_node->Attribute( "name" ) << std::endl;
+    outfile << "\t\texport port sync success" << "\n";
+    outfile << "\t\texport port sync failure" << "\n";
+    outfile << "\t\texport port sync tick" << "\n";
+    outfile << "\t\texport port sync running" << "\n";
+    
+    int sub_nums = subChildrenCount(tree_node);//下一层子节点
+    for(int i =1;i <= sub_nums;i++)
+    {
+        outfile << "\t\texport port sync success" << i << "\n";
+        outfile << "\t\texport port sync failure" << i << "\n";
+        outfile << "\t\texport port sync tick" << i << "\n";
+        outfile << "\t\texport port sync running" << i << "\n";
+    }
+
+    outfile << "\t\tplace l0";
+    for(int i =0;i < sub_nums;i++)
+        outfile << ",l" << i+1 << ",l" << i+1 << i+1;
+    outfile << ",l" << sub_nums+1 << ",lf,lr\n";
+    outfile << "\t\tinitial to l0" << std::endl;
+
+    outfile << "\t\ton tick from l0 to l1\n";
+    outfile << "\t\ton success from l" << sub_nums +1 << " to l0\n";
+    outfile << "\t\ton failure from lf to l0\n";
+    outfile << "\t\ton running from lr to l0\n";
+
+    for(int i =0;i < sub_nums;i++)
+    {
+        outfile << "\t\ton tick" << i+1 << " from l" << i+1 << " to l" << i+1 << i+1 << "\n";
+        outfile << "\t\ton success" << i+1 << " from l" << i+1 << i+1 << " to l" << i +2 << "\n";
+        outfile << "\t\ton failure" << i+1 << " from l" << i+1 << i+1 << " to lf\n";
+        outfile << "\t\ton running" << i+1 << " from l" << i+1 << i+1 << " to lr\n";
+    }
+
+    outfile <<"\tend\n\n";
+    outfile.close();
+}
+
+// 计算各类节点的个数
+void node_num(tinyxml2::XMLElement * element,struct Node_Number &getNodeNb)
+{
+    for (tinyxml2::XMLElement* currentele = element->FirstChildElement();
+        currentele;
+        currentele = currentele->NextSiblingElement())
 	{
 	    tree_num ++;
         tinyxml2::XMLElement* tmpele = currentele;
 
-        const int children_count = ChildrenCount(tmpele);
-        const char* name = tmpele->Name();
-
         if(!strcmp(tmpele->Name(),"Condition"))
         {
-            condition_num ++;
+            getNodeNb.condition_num ++;
         }
 
         if(!strcmp(tmpele->Name(),"Action"))
         {
-            action_num ++;
+            getNodeNb.action_num ++;
         }
 
         if(!strcmp(tmpele->Name(),"Fallback"))
         {
-            fallback_num ++;
+            getNodeNb.fallback_num ++;
         }
 
         if(!strcmp(tmpele->Name(),"Sequence"))
         {
-            sequence_num ++;
+            getNodeNb.sequence_num ++;
         }
         
 	    if (!tmpele->NoChildren())
-		    node_num(tmpele);
+		    node_num(tmpele,getNodeNb);
 	}
 }
 
-void main_Model_Print()
+void GetEleValue_for_name(tinyxml2::XMLElement * element,struct Node_Name &getNodeName)
 {
-    std::ofstream outfile("../mytree.bip",std::ios::app);
-    // outfile.open
-    if(!outfile.is_open())
-        std::cout << "open file faileure" << std::endl;
-    outfile << "MODULE main" << std::endl;
-    outfile << "\t" << "port type sync" << "\n";
-    
-    outfile << "\t" << "atomic type condition" << "\n"
-            << "\t\t" << "export port sync tick" << "\n"
-            << "\t" << "end" << "\n\n";
-        
-    outfile << "\t" << "atomic type action" << "\n"
-            << "\t" << "end" << "\n\n";
 
-    outfile << "\t" << "atomic type  sequence" << "\n"
-            << "\t" << "end" << "\n\n";
-
-    outfile << "\t" << "atomic type fallback" << "\n"
-            << "\t" << "end" << "\n\n";
-
-    outfile << "\t" << "connector type rendezvous(sync p1,sync p2)" << "\n"
-            << "\t\t" << "define [p1 p2]" << "\n"
-            << "\t" << "end" << "\n\n";
-
-    outfile << "\t" << "compound type system" << "\n";
-
-    std::cout <<  "condition_num is " << condition_num << std::endl;
-    std::cout <<  "action_num is " << action_num << std::endl;
-    std::cout <<  "sequence_num is " << sequence_num << std::endl;
-    std::cout <<  "fallback_num is " << fallback_num << std::endl;
-
-    //Vector_condition,Vector_action,Vector_sequence,Vector_fallback
-    if(condition_num>0)
-    {
-        outfile << "\t\t" << "component condition " << Vector_condition[0];
-        for(int i =1;i< Vector_condition.size();i++)
-        {
-            outfile << "," << Vector_condition[i];
-        }
-        outfile << "\n";
-    }
-
-    if(action_num>0)
-    {
-        outfile << "\t\t" << "component condition " << Vector_action[0];
-        for(int i =1;i< Vector_action.size();i++)
-        {
-            outfile << "," << Vector_action[i];
-        }
-        outfile << "\n";
-    }
-
-    if(sequence_num>0)
-    {
-        outfile << "\t\t" << "component condition " << Vector_sequence[0][0];
-        for(int i =1;i< Vector_sequence.size();i++)
-        {
-            outfile << "," << Vector_sequence[i][0];
-        }
-        outfile << "\n";
-    }
-
-    if(fallback_num>0)
-    {
-        outfile << "\t\t" << "component condition " << Vector_fallback[0][0];
-        for(int i =1;i< fallback_num;i++)
-        {
-            outfile << "," << Vector_fallback[i][0];
-        }
-        outfile << "\n";
-    }
-
-    if(sequence_num>0)
-    {
-        outfile << "\n";
-        for(int i =0;i< Vector_sequence.size();i++)
-        {
-            for(int j = 1;j< Vector_sequence[i].size();j++)
-            {
-                outfile << "\t\t" << "connector rendezvous " << Vector_sequence[i][0] << "_to_" << Vector_sequence[i][j] << "_tick("  << Vector_sequence[i][0] << ".tick"<< j << "," << Vector_sequence[i][j] << ".tick)" <<"\n";
-                outfile << "\t\t" << "connector rendezvous " << Vector_sequence[i][0] << "_to_" << Vector_sequence[i][j] << "_success("  << Vector_sequence[i][0] << ".success" << j << "," << Vector_sequence[i][j] << ".success)" <<"\n";
-                outfile << "\t\t" << "connector rendezvous " << Vector_sequence[i][0] << "_to_" << Vector_sequence[i][j] << "_failure("  << Vector_sequence[i][0] << ".failure" << j << "," << Vector_sequence[i][j] << ".failure)" <<"\n";
-                outfile << "\t\t" << "connector rendezvous " << Vector_sequence[i][0] << "_to_" << Vector_sequence[i][j] << "_running("  << Vector_sequence[i][0] << ".running" << j << "," << Vector_sequence[i][j] << ".running)" <<"\n";
-                
-            }
-        }
-    }
-
-    if(fallback_num>0)
-    {
-        outfile << "\n";
-        for(int i =0;i< Vector_fallback.size();i++)
-        {
-            for(int j = 1;j< Vector_fallback[i].size();j++)
-            {
-                outfile << "\t\t" << "connector rendezvous " << Vector_fallback[i][0] << "_to_" << Vector_fallback[i][j] << "_tick("  << Vector_fallback[i][0] << ".tick"<< j << "," << Vector_fallback[i][j] << ".tick)" <<"\n";
-                outfile << "\t\t" << "connector rendezvous " << Vector_fallback[i][0] << "_to_" << Vector_fallback[i][j] << "_success("  << Vector_fallback[i][0] << ".success" << j << "," << Vector_fallback[i][j] << ".success)" <<"\n";
-                outfile << "\t\t" << "connector rendezvous " << Vector_fallback[i][0] << "_to_" << Vector_fallback[i][j] << "_failure("  << Vector_fallback[i][0] << ".failure" << j << "," << Vector_fallback[i][j] << ".failure)" <<"\n";
-                outfile << "\t\t" << "connector rendezvous " << Vector_fallback[i][0] << "_to_" << Vector_fallback[i][j] << "_running("  << Vector_fallback[i][0] << ".running" << j << "," << Vector_fallback[i][j] << ".running)" <<"\n";
-                
-            }
-        }
-    }
-    outfile << "\tend\n";
-    outfile << "\tcomponent system sys\n";
-    outfile << "end\n";
-
-    outfile.close();
-}
-
-void GetEleValue_for_name(tinyxml2::XMLElement * element)
-{
-    //Vector_condition,Vector_action,Vector_sequence,Vector_fallback
     for (tinyxml2::XMLElement* currentele = element->FirstChildElement(); currentele; currentele = currentele->NextSiblingElement())
 	{
 	    tree_num ++;
         tinyxml2::XMLElement* tmpele = currentele;
 
-        const int children_count = ChildrenCount(tmpele);
-        const char* name = tmpele->Name(); 
-
         if(!strcmp(tmpele->Name(),"Condition"))
         {
-            Vector_condition.push_back(tmpele->Attribute( "name" ));
-            // conditionPrint(tmpele->Attribute( "name" ),tree_num);
+            getNodeName.Vector_condition.push_back(tmpele->Attribute( "name" ));
         }
 
         if(!strcmp(tmpele->Name(),"Action"))
         {
-            Vector_action.push_back(tmpele->Attribute( "name" ));
-            // actionPrint(tmpele->Attribute( "name" ),tree_num);
+            getNodeName.Vector_action.push_back(tmpele->Attribute( "name" ));
         }
 
         if(!strcmp(tmpele->Name(),"Fallback"))
@@ -605,8 +273,7 @@ void GetEleValue_for_name(tinyxml2::XMLElement * element)
             {
                 numFall.push_back(node->Attribute( "name" ));
             }
-            Vector_fallback.push_back(numFall);
-            // std::cout << std::endl;
+            getNodeName.Vector_fallback.push_back(numFall);
         }
 
         if(!strcmp(tmpele->Name(),"Sequence"))
@@ -617,68 +284,172 @@ void GetEleValue_for_name(tinyxml2::XMLElement * element)
             {
                 numSeq.push_back(node->Attribute( "name" ));
             }
-            Vector_sequence.push_back(numSeq);
-            // std::cout << std::endl;
+            getNodeName.Vector_sequence.push_back(numSeq);
         }
         
 	    if (!tmpele->NoChildren())
-		    GetEleValue_for_name(tmpele);
+		    GetEleValue_for_name(tmpele,getNodeName);
 	}
 }
 
-// void GetEleValue(tinyxml2::XMLElement * element)
-// {
+void GetEleValue(tinyxml2::XMLElement * element,std::string &output_filename,std::vector<std::string> &numCom)
+{
+    for (tinyxml2::XMLElement* currentele = element->FirstChildElement(); currentele; currentele = currentele->NextSiblingElement())
+	{
+	    tree_num ++;
+        tinyxml2::XMLElement* tmpele = currentele;
 
-//     for (tinyxml2::XMLElement* currentele = element->FirstChildElement(); currentele; currentele = currentele->NextSiblingElement())
-// 	{
-// 	    tree_num ++;
-//         tinyxml2::XMLElement* tmpele = currentele;
+        const char* name = tmpele->Name();      
+        if((!strcmp(name,"Sequence") || !strcmp(name,"Fallback")))
+        {
+            // std::cout << "I " << tmpele->Name() << " have " <<subChildrenCount(tmpele) << " nums sub tree!  and sub chaild have " 
+            //                                                                            << subChildHaveComposite(tmpele) << " nums Composite"<< std::endl;
+                numCom.push_back(tmpele->Attribute( "name" ));
+        }        
 
-//         const int children_count = ChildrenCount(tmpele);
-//         const char* name = tmpele->Name();
+        if(!strcmp(tmpele->Name(),"Condition"))
+        {
+            conditionPrint(tmpele->Attribute( "name" ),tree_num,tmpele,output_filename);
+        }
 
-//         if(!strcmp(name,"Sequence") || !strcmp(name,"Fallback"))
-//         {
-//             std::cout << "I " << tmpele->Name() << " have " <<subChildrenCount(tmpele) << " nums sub tree!  and sub chaild have " 
-//                                                                                        << subChildHaveComposite(tmpele) << " nums Composite"<< std::endl;
-//         }        
+        if(!strcmp(tmpele->Name(),"Action"))
+        {
+            actionPrint(tmpele->Attribute( "name" ),tree_num,tmpele,output_filename);
+        }
 
-//         if(!strcmp(tmpele->Name(),"Condition"))
-//         {
-//             // conditionPrint(tmpele->Attribute( "name" ),tree_num);
-//         }
+        if(!strcmp(tmpele->Name(),"Fallback"))
+        {
+            std::vector<std::string> numFall;
+            for (auto node = tmpele->FirstChildElement(); node != nullptr;node = node->NextSiblingElement())
+            {
+                numFall.push_back(node->Attribute( "name" ));
+            }
+            std::cout << std::endl;
+            fallbackPrint(tmpele->Attribute( "name" ),numFall,tree_num,tmpele,output_filename);
+        }
 
-//         if(!strcmp(tmpele->Name(),"Action"))
-//         {
-//             // actionPrint(tmpele->Attribute( "name" ),tree_num);
-//         }
+        if(!strcmp(tmpele->Name(),"Sequence"))
+        {
+            std::vector<std::string> numSeq;
+            for (auto node = tmpele->FirstChildElement(); node != nullptr;node = node->NextSiblingElement())
+            {
+                numSeq.push_back(node->Attribute( "name" ));
+            }
+            std::cout << std::endl;
+            sequencePrint(tmpele->Attribute( "name" ),numSeq,tree_num,tmpele,output_filename);
+        }
 
-//         if(!strcmp(tmpele->Name(),"Fallback"))
-//         {
-//             std::vector<std::string> numSeq;
-//             for (auto node = tmpele->FirstChildElement(); node != nullptr;node = node->NextSiblingElement())
-//             {
-//                 numSeq.push_back(node->Attribute( "name" ));
-//             }
-//             std::cout << std::endl;
-//             // fallbackPrint(tmpele->Attribute( "name" ),numSeq,tree_num,tmpele);
-//         }
+	    if (!tmpele->NoChildren())
+		    GetEleValue(tmpele,output_filename,numCom);
+	}
+}
 
-//         if(!strcmp(tmpele->Name(),"Sequence"))
-//         {
-//             std::vector<std::string> numSeq;
-//             for (auto node = tmpele->FirstChildElement(); node != nullptr;node = node->NextSiblingElement())
-//             {
-//                 numSeq.push_back(node->Attribute( "name" ));
-//             }
-//             std::cout << std::endl;
-//             // sequencePrint(tmpele->Attribute( "name" ),numSeq,tree_num,tmpele);
-//         }
+void main_Model_Print(struct Node_Name &getNodeName,struct Node_Number &getNodeNb,tinyxml2::XMLElement* xml_root,std::string &output_filename,std::vector<std::string> &numCom)
+{
+    std::ofstream outfile(output_filename,std::ios::app);
+    if(!outfile.is_open())
+        std::cout << "open file faileure" << std::endl;
+    outfile << "model main" << std::endl;
+    outfile << "\t" << "port type sync" << std::endl;
+    
+    outfile << "\t" << "connector type rendezvous(sync p1,sync p2)" << "\n"
+            << "\t\t" << "define [p1 p2]" << "\n"
+            << "\t" << "end" << "\n" << std::endl;
+
+    outfile << "\t" << "connector type single(sync p)" << "\n"
+            << "\t\t" << "define [p]" << "\n"
+            << "\t" << "end" << "\n" << std::endl;  
+
+    GetEleValue(xml_root,output_filename,numCom);
+
+    outfile << "\t" << "compound type system" << std::endl;
+
+    std::cout << "\ncondition num is " << getNodeNb.condition_num << std::endl;
+    if(getNodeNb.condition_num>0)
+    {
         
-// 	    if (!tmpele->NoChildren())
-// 		    GetEleValue(tmpele);
-// 	}
-// }
+        for(int i =0;i< getNodeName.Vector_condition.size();i++)
+        {
+            outfile << "\t\t" << "component " << getNodeName.Vector_condition[i] << " " << getNodeName.Vector_condition[i] << "_c" << std::endl;
+            
+        }
+        outfile << std::endl;
+    }
+    std::cout << "action num is " << getNodeNb.action_num << std::endl;
+    if(getNodeNb.action_num>0)
+    {
+        
+        for(int i =0;i< getNodeName.Vector_action.size();i++)
+        {
+            outfile << "\t\t" << "component " << getNodeName.Vector_action[i] << " " << getNodeName.Vector_action[i] << "_c" << std::endl;
+        }
+        outfile << std::endl;
+    }
+    std::cout << "sequence num is " << getNodeNb.sequence_num << std::endl;
+    if(getNodeNb.sequence_num>0)
+    {
+        
+        for(int i =0;i< getNodeName.Vector_sequence.size();i++)
+        {
+            outfile << "\t\t" << "component " << getNodeName.Vector_sequence[i][0] << " " << getNodeName.Vector_sequence[i][0] << "_c" << std::endl;
+        }
+        outfile << "\n";
+    }
+    std::cout << "fallback num is " << getNodeNb.fallback_num << std::endl;
+    if(getNodeNb.fallback_num>0)
+    {
+        
+        for(int i =0;i< getNodeNb.fallback_num;i++)
+        {
+            outfile << "\t\t" << "component " << getNodeName.Vector_fallback[i][0] << " " << getNodeName.Vector_fallback[i][0] << "_c" << std::endl;
+        }
+        outfile << std::endl;
+    }
+
+    if(getNodeNb.sequence_num>0)
+    {
+        outfile << "\n";
+        for(int i =0;i< getNodeName.Vector_sequence.size();i++)
+        {
+            for(int j = 1;j< getNodeName.Vector_sequence[i].size();j++)
+            {
+                outfile << "\t\t" << "connector rendezvous " << getNodeName.Vector_sequence[i][0] << "_c" << "_to_" << getNodeName.Vector_sequence[i][j] << "_c" << "_tick("  << getNodeName.Vector_sequence[i][0] << "_c" << ".tick"<< j << "," << getNodeName.Vector_sequence[i][j] << "_c" << ".tick)" <<"\n";
+                outfile << "\t\t" << "connector rendezvous " << getNodeName.Vector_sequence[i][0] << "_c" << "_to_" << getNodeName.Vector_sequence[i][j] << "_c" << "_success("  << getNodeName.Vector_sequence[i][0] << "_c" << ".success" << j << "," << getNodeName.Vector_sequence[i][j] << "_c" << ".success)" <<"\n";
+                outfile << "\t\t" << "connector rendezvous " << getNodeName.Vector_sequence[i][0] << "_c" << "_to_" << getNodeName.Vector_sequence[i][j] << "_c" << "_failure("  << getNodeName.Vector_sequence[i][0] << "_c" << ".failure" << j << "," << getNodeName.Vector_sequence[i][j] << "_c" << ".failure)" <<"\n";
+                outfile << "\t\t" << "connector rendezvous " << getNodeName.Vector_sequence[i][0] << "_c" << "_to_" << getNodeName.Vector_sequence[i][j] << "_c" << "_running("  << getNodeName.Vector_sequence[i][0] << "_c" << ".running" << j << "," << getNodeName.Vector_sequence[i][j] << "_c" << ".running)" <<"\n";            
+            }
+        }
+
+    }
+
+    if(getNodeNb.fallback_num>0)
+    {
+        outfile << "\n";
+        for(int i =0;i< getNodeName.Vector_fallback.size();i++)
+        {
+            for(int j = 1;j< getNodeName.Vector_fallback[i].size();j++)
+            {
+                outfile << "\t\t" << "connector rendezvous " << getNodeName.Vector_fallback[i][0] << "_c" << "_to_" << getNodeName.Vector_fallback[i][j] << "_c" << "_tick("  << getNodeName.Vector_fallback[i][0] << "_c" << ".tick"<< j << "," << getNodeName.Vector_fallback[i][j] << "_c" << ".tick)" <<"\n";
+                outfile << "\t\t" << "connector rendezvous " << getNodeName.Vector_fallback[i][0] << "_c" << "_to_" << getNodeName.Vector_fallback[i][j] << "_c" << "_success("  << getNodeName.Vector_fallback[i][0] << "_c" << ".success" << j << "," << getNodeName.Vector_fallback[i][j] << "_c" << ".success)" <<"\n";
+                outfile << "\t\t" << "connector rendezvous " << getNodeName.Vector_fallback[i][0] << "_c" << "_to_" << getNodeName.Vector_fallback[i][j] << "_c" << "_failure("  << getNodeName.Vector_fallback[i][0] << "_c" << ".failure" << j << "," << getNodeName.Vector_fallback[i][j] << "_c" << ".failure)" <<"\n";
+                outfile << "\t\t" << "connector rendezvous " << getNodeName.Vector_fallback[i][0] << "_c" << "_to_" << getNodeName.Vector_fallback[i][j] << "_c" << "_running("  << getNodeName.Vector_fallback[i][0] << "_c" << ".running" << j << "," << getNodeName.Vector_fallback[i][j] << "_c" << ".running)" <<"\n";
+            }
+        }
+
+    }
+
+    outfile << std::endl; 
+    outfile << "\t\t" << "connector single " << numCom[0] << "_tick("  << numCom[0] << "_c" << ".tick" << ")" << std::endl;
+    outfile << "\t\t" << "connector single " << numCom[0] << "_success("  << numCom[0] << "_c" << ".success" << ")" << std::endl;
+    outfile << "\t\t" << "connector single " << numCom[0] << "_failure("  << numCom[0] << "_c" << ".failure" << ")" << std::endl;
+    outfile << "\t\t" << "connector single " << numCom[0] << "_running("  << numCom[0] << "_c" << ".running" << ")" << std::endl;
+
+    outfile << "\tend\n\n";
+    outfile << "\tcomponent system sys\n" << std::endl;
+    outfile.close();
+}
+
+
 
 std::string CharToStr(char * contentChar)
 {
@@ -690,141 +461,59 @@ std::string CharToStr(char * contentChar)
 	return tempStr;
 }
 
-
-void ModifyLineData(char* fileName, int lineNum)
-{
-	std::ifstream in;
-	in.open(fileName);
- 
-	std::string strFileData = "";
-	int line = 1;
-	char tmpLineData[1024] = {0};
-	while(in.getline(tmpLineData, sizeof(tmpLineData)))
-	{
-		if (line == lineNum)
-		{
-			strFileData += "MODULE main \n";
-		}
-        else
-		{
-			strFileData += CharToStr(tmpLineData);
-			strFileData += "\n";
-        }
-
-		line++;
-	}
-	in.close();
- 
-	//写入文件
-	std::ofstream out;
-	out.open(fileName);
-	out.flush();
-	out<<strFileData;
-	out.close();
-}
-
-void ModifyLineData_main(char* fileName, int lineNum ,int root_sub_num)
-{
-	std::ifstream in;
-	in.open(fileName);
-    // std::cout << "lineNum +++++++++++++++++++++++++++++++++" << lineNum << std::endl;
- 
-	std::string strFileData = "\ttick:{1";
-    std::string str_FileData = "";
-    for(int i = 2; i <= root_sub_num;i++)
-    {
-        strFileData = strFileData + "," + std::to_string(i);;
-    }
-    strFileData =strFileData + "};\n";
-
-	int line = 0;
-	char tmpLineData[1024] = {0};
-	while(in.getline(tmpLineData, sizeof(tmpLineData)))
-	{
-		line ++;
-        if (lineNum == line)
-		{
-			str_FileData += strFileData;
-		}
-        else
-		{
-			str_FileData += CharToStr(tmpLineData);
-			str_FileData += "\n";
-        }
-
-	}
-	in.close();
- 
-	//写入文件
-	std::ofstream out;
-	out.open(fileName);
-	out.flush();
-	out<<str_FileData;
-	out.close();
-}
-
-
 int main( int argc, char* argv[] )
 {
 	
+    std::string input_filename,output_filename;
+    
+    const char * const short_options = "i:o:";
+    int option;
+
+    const struct option long_options[] = 
+    {
+        { "input",    0, NULL, 'i' },
+        { "output", 0, NULL, 'o' }
+    };
+
+    while ((option = getopt_long(argc, argv, short_options, long_options, NULL)) != -1) 
+    {
+		switch (option) 
+        {
+			case 'i': input_filename = std::string(optarg); break;
+            case 'o': output_filename = std::string(optarg); break;
+		}
+	}
+
+    struct Node_Name getNodeName;
+    struct Node_Number getNodeNb = {0,0,0,0,0};
+    std::vector<std::string> numCom;
+
     tinyxml2::XMLDocument doc;
-	if ( doc.LoadFile("../mytree.xml") )
+	if ( doc.LoadFile(input_filename.c_str()) )
 	{
 		doc.PrintError();
 		exit( 1 );
 	}
  
 	// 根元素
-    
 	tinyxml2::XMLElement* xml_root = doc.RootElement();
-    int all_sub_num = -1;
-    int root_sub_num = allsubChildrenCount(xml_root,all_sub_num);
-    std::cout << "root_sub_num is " << root_sub_num << std::endl;
+    
+    // int all_sub_num = -1;
+    // int root_sub_num = allsubChildrenCount(xml_root,all_sub_num);
+    // std::cout << "root_sub_num is " << root_sub_num << std::endl;
     
     if (!xml_root || !StrEqual(xml_root->Name(), "root"))
     {
         throw std::runtime_error("The XML must have a root node called <root>");
     }
-    std::ofstream outfile("../mytree.bip");
 
-    node_num(xml_root);
-    GetEleValue_for_name(xml_root);
-    std::cout << "Vector_sequence.size() is " << Vector_sequence.size() << std::endl;
-    std::cout << "sub Vector_sequence.size() is " << Vector_sequence[1].size() << std::endl;
+    remove(output_filename.c_str());
+    std::ofstream outfile(output_filename,std::ios::app);
 
-    main_Model_Print();
-
-    
-    
-
-    // ModifyLineData("../mytree.bip",1);
-    // ModifyLineData_main("../mytree.bip",3,root_sub_num);
-    // ModifyLineData("../mytree.bip",1);
+    node_num(xml_root,getNodeNb);
+    GetEleValue_for_name(xml_root,getNodeName);
+    main_Model_Print(getNodeName,getNodeNb,xml_root,output_filename,numCom);
+    outfile << "end" << std::endl; 
 
     return 0;
 }
-
-
-// CTLSPEC
-    // E[((fallback_node.status = success)->(action_init.status = success)) 
-    // & ((closeup_fallback_node.status = success) -> (asmb_fallback_node.status = success))
-    // & ((k-c_sequence_node.status = success) -> (closeup_fallback_node.status = success))
-    // & ((fd_fallback_node.status = success) -> (closeup_fallback_node.status = success))
-    // & ((fx_fallback_node.status = success) -> (fd_fallback_node.status = success))
-    // & ((tra_fallback_node.status = success) -> (fx_fallback_node.status = success))
-    // & ((tar_fallback_node.status = success) -> (tra_fallback_node.status = success))
-    // & ((eng_fallback_node.status = success) -> (tar_fallback_node.status = success))
-    // & ((eng_ass_fallback_node.status = success) -> (eng_fallback_node.status = success))
-    // & ((end_fallback_node.status = success) -> (eng_ass_fallback_node.status = success))]
-
-    // CTLSPEC
-    // !E[((fallback_node.status = success)->(action_init.status = success)) U ((fd_fallback_node.status = success) -> (closeup_fallback_node.status = success))]
-    // -- !E[((s1.status = success)->(s35.status = success)) U ((s13.status = success)->(s9.status = success))]
-
-// SPEC !E[(s1.status = success)->(s35.status = success)U(s1.status = success & s35.status = success)]
-
-// SPEC !E[(s2.status = success)->(s1.status = success)U(s1.status = success & s2.status = success)]
-// SPEC !E[(s2.s6.s13.s14.status = success)->(s2.s6.s10.status = success)U(s2.s6.s13.s14.status = success & s2.s6.s10.status = success)]
-
-// LTLSPEC G(!((s2.s3.status = success) & (s2.s4.status = failure) & (s5.s7.status = failure)))
-// LTLSPEC G(!((s5.s6.status = success) & (s5.s7.status = success) & (s2.s4.status = failure)))
