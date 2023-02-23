@@ -20,5 +20,6 @@
 
 ## Running
 - ./xml2bip -o ../scripts/mytree.bip -i ../mytree.xml
+
 -o output filename 
 -i input filename
