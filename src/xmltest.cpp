@@ -78,8 +78,18 @@ void conditionPrint(const char* node_name,int &tree_num,tinyxml2::XMLElement* tr
     if(!outfile.is_open())
         std::cout << "open file faileure" << std::endl;
 
+    
+    std::string variable;
+    variable = tree_node->Attribute("var");
+    
+    std::string condition = tree_node->Attribute("guard");
+    //    std::cout << condition << std::endl;
+    
     outfile << "\tatomic type " << tree_node->Attribute( "name" ) << std::endl;
-    // outfile << "\t\tdata int x\n";
+
+    if(!variable.empty())
+      outfile << "\t\tdata int " << variable << "\n";
+
     outfile << "\t\texport port sync success" << "\n";
     outfile << "\t\texport port sync failure" << "\n";
     outfile << "\t\texport port sync tick" << "\n";
@@ -88,7 +98,7 @@ void conditionPrint(const char* node_name,int &tree_num,tinyxml2::XMLElement* tr
     outfile << "\t\tplace l0,l1 " << "\n";
     outfile << "\t\tinitial to l0 " << "\n";
     outfile << "\t\ton tick from l0 to l1 " << "\n";
-    outfile << "\t\ton success from l1 to l0 " << "\n";
+    outfile << "\t\ton success from l1 to l0 provided(" << condition << ")\n";
     outfile << "\t\ton failure from l1 to l0 " << "\n";
     outfile << "\tend" << "\n";
 
@@ -103,8 +113,17 @@ void actionPrint(const char* node_name,int &tree_num,tinyxml2::XMLElement* tree_
     if(!outfile.is_open())
         std::cout << "open file faileure" << std::endl;
 
+    std::string variable;
+    variable = tree_node->Attribute("var");
+    
+    std::string action = tree_node->Attribute("action");
+	
     outfile << "\tatomic type " << tree_node->Attribute( "name" ) << std::endl;
-    // outfile << "\t\tdata int x\n";
+
+    if(!variable.empty())
+      outfile << "\t\tdata int " << variable << "\n";
+
+    
     outfile << "\t\texport port sync success" << "\n";
     outfile << "\t\texport port sync failure" << "\n";
     outfile << "\t\texport port sync tick" << "\n";
@@ -112,7 +131,7 @@ void actionPrint(const char* node_name,int &tree_num,tinyxml2::XMLElement* tree_
 
     outfile << "\t\tplace l0,l1 " << "\n";
     outfile << "\t\tinitial to l0 " << "\n";
-    outfile << "\t\ton tick from l0 to l1 do {}" << "\n";
+    outfile << "\t\ton tick from l0 to l1 do {" << action << ";}\n";
     outfile << "\t\ton success from l1 to l0 " << "\n";
     outfile << "\t\ton failure from l1 to l0 " << "\n";
     outfile << "\t\ton running from l1 to l0 provided(0)" << "\n";
