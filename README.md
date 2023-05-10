@@ -19,7 +19,7 @@
 - make -j
 
 ## Running
-- ./xml2bip -o ../scripts/mytree.bip -i ../mytree.xml
+- ./xml2bip -o ../test/mytree.bip -i ../test/mytree.xml
 
 -o output filename 
 
