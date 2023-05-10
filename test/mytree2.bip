@@ -1,0 +1,409 @@
+model main
+	port type sync
+	connector type rendezvous(sync p1,sync p2)
+		define [p1 p2]
+	end
+
+	connector type single(sync p)
+		define [p]
+	end
+
+	atomic type root_sequence
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		export port sync success1
+		export port sync failure1
+		export port sync tick1
+		export port sync running1
+		export port sync success2
+		export port sync failure2
+		export port sync tick2
+		export port sync running2
+		place l0,l1,l11,l2,l22,l3,lf,lr
+		initial to l0
+		on tick from l0 to l1
+		on success from l3 to l0
+		on failure from lf to l0
+		on running from lr to l0
+		on tick1 from l1 to l11
+		on success1 from l11 to l2
+		on failure1 from l11 to lf
+		on running1 from l11 to lr
+		on tick2 from l2 to l22
+		on success2 from l22 to l3
+		on failure2 from l22 to lf
+		on running2 from l22 to lr
+	end
+
+	atomic type fallback_1
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		export port sync success1
+		export port sync failure1
+		export port sync tick1
+		export port sync running1
+		export port sync success2
+		export port sync failure2
+		export port sync tick2
+		export port sync running2
+		place l0,l1,l11,l2,l22,l3,lf,lr
+		initial to l0
+		on tick from l0 to l1
+		on failure from l3 to l0
+		on success from lf to l0
+		on running from lr to l0
+		on tick1 from l1 to l11
+		on failure1 from l11 to l2
+		on success1 from l11 to lf
+		on running1 from l11 to lr
+		on tick2 from l2 to l22
+		on failure2 from l22 to l3
+		on success2 from l22 to lf
+		on running2 from l22 to lr
+	end
+
+	atomic type sequence_1
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		export port sync success1
+		export port sync failure1
+		export port sync tick1
+		export port sync running1
+		export port sync success2
+		export port sync failure2
+		export port sync tick2
+		export port sync running2
+		place l0,l1,l11,l2,l22,l3,lf,lr
+		initial to l0
+		on tick from l0 to l1
+		on success from l3 to l0
+		on failure from lf to l0
+		on running from lr to l0
+		on tick1 from l1 to l11
+		on success1 from l11 to l2
+		on failure1 from l11 to lf
+		on running1 from l11 to lr
+		on tick2 from l2 to l22
+		on success2 from l22 to l3
+		on failure2 from l22 to lf
+		on running2 from l22 to lr
+	end
+
+	atomic type IsSpeedZero
+		data int speed
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		place l0,l1 
+		initial to l0 
+		on tick from l0 to l1 
+		on success from l1 to l0 provided(speed==0)
+		on failure from l1 to l0 
+	end
+
+	atomic type StopTrain
+		data int stop
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		place l0,l1 
+		initial to l0 
+		on tick from l0 to l1 do {stop=1;}
+		on success from l1 to l0 
+		on failure from l1 to l0 
+		on running from l1 to l0 provided(0)
+	end
+
+	atomic type sequence_2
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		export port sync success1
+		export port sync failure1
+		export port sync tick1
+		export port sync running1
+		export port sync success2
+		export port sync failure2
+		export port sync tick2
+		export port sync running2
+		place l0,l1,l11,l2,l22,l3,lf,lr
+		initial to l0
+		on tick from l0 to l1
+		on success from l3 to l0
+		on failure from lf to l0
+		on running from lr to l0
+		on tick1 from l1 to l11
+		on success1 from l11 to l2
+		on failure1 from l11 to lf
+		on running1 from l11 to lr
+		on tick2 from l2 to l22
+		on success2 from l22 to l3
+		on failure2 from l22 to lf
+		on running2 from l22 to lr
+	end
+
+	atomic type IsStopped
+		data int stop
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		place l0,l1 
+		initial to l0 
+		on tick from l0 to l1 
+		on success from l1 to l0 provided(stop==1)
+		on failure from l1 to l0 
+	end
+
+	atomic type OpenDoor
+		data int door
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		place l0,l1 
+		initial to l0 
+		on tick from l0 to l1 do {door=1;}
+		on success from l1 to l0 
+		on failure from l1 to l0 
+		on running from l1 to l0 provided(0)
+	end
+
+	atomic type fallback_2
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		export port sync success1
+		export port sync failure1
+		export port sync tick1
+		export port sync running1
+		export port sync success2
+		export port sync failure2
+		export port sync tick2
+		export port sync running2
+		place l0,l1,l11,l2,l22,l3,lf,lr
+		initial to l0
+		on tick from l0 to l1
+		on failure from l3 to l0
+		on success from lf to l0
+		on running from lr to l0
+		on tick1 from l1 to l11
+		on failure1 from l11 to l2
+		on success1 from l11 to lf
+		on running1 from l11 to lr
+		on tick2 from l2 to l22
+		on failure2 from l22 to l3
+		on success2 from l22 to lf
+		on running2 from l22 to lr
+	end
+
+	atomic type sequence_3
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		export port sync success1
+		export port sync failure1
+		export port sync tick1
+		export port sync running1
+		export port sync success2
+		export port sync failure2
+		export port sync tick2
+		export port sync running2
+		place l0,l1,l11,l2,l22,l3,lf,lr
+		initial to l0
+		on tick from l0 to l1
+		on success from l3 to l0
+		on failure from lf to l0
+		on running from lr to l0
+		on tick1 from l1 to l11
+		on success1 from l11 to l2
+		on failure1 from l11 to lf
+		on running1 from l11 to lr
+		on tick2 from l2 to l22
+		on success2 from l22 to l3
+		on failure2 from l22 to lf
+		on running2 from l22 to lr
+	end
+
+	atomic type IsDoorClosed
+		data int door
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		place l0,l1 
+		initial to l0 
+		on tick from l0 to l1 
+		on success from l1 to l0 provided(door==0)
+		on failure from l1 to l0 
+	end
+
+	atomic type Speedup
+		data int speed
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		place l0,l1 
+		initial to l0 
+		on tick from l0 to l1 do {speed=speed+1;}
+		on success from l1 to l0 
+		on failure from l1 to l0 
+		on running from l1 to l0 provided(0)
+	end
+
+	atomic type sequence_4
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		export port sync success1
+		export port sync failure1
+		export port sync tick1
+		export port sync running1
+		export port sync success2
+		export port sync failure2
+		export port sync tick2
+		export port sync running2
+		place l0,l1,l11,l2,l22,l3,lf,lr
+		initial to l0
+		on tick from l0 to l1
+		on success from l3 to l0
+		on failure from lf to l0
+		on running from lr to l0
+		on tick1 from l1 to l11
+		on success1 from l11 to l2
+		on failure1 from l11 to lf
+		on running1 from l11 to lr
+		on tick2 from l2 to l22
+		on success2 from l22 to l3
+		on failure2 from l22 to lf
+		on running2 from l22 to lr
+	end
+
+	atomic type IsSpeedPositive
+		data int speed
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		place l0,l1 
+		initial to l0 
+		on tick from l0 to l1 
+		on success from l1 to l0 provided(speed>0)
+		on failure from l1 to l0 
+	end
+
+	atomic type Speeddown
+		data int speed
+		export port sync success
+		export port sync failure
+		export port sync tick
+		export port sync running
+		place l0,l1 
+		initial to l0 
+		on tick from l0 to l1 do {speed=speed-1;}
+		on success from l1 to l0 
+		on failure from l1 to l0 
+		on running from l1 to l0 provided(0)
+	end
+
+	compound type system
+		component IsSpeedZero IsSpeedZero_c
+		component IsStopped IsStopped_c
+		component IsDoorClosed IsDoorClosed_c
+		component IsSpeedPositive IsSpeedPositive_c
+
+		component StopTrain StopTrain_c
+		component OpenDoor OpenDoor_c
+		component Speedup Speedup_c
+		component Speeddown Speeddown_c
+
+		component root_sequence root_sequence_c
+		component sequence_1 sequence_1_c
+		component sequence_2 sequence_2_c
+		component sequence_3 sequence_3_c
+		component sequence_4 sequence_4_c
+
+		component fallback_1 fallback_1_c
+		component fallback_2 fallback_2_c
+
+
+		connector rendezvous root_sequence_c_to_fallback_1_c_tick(root_sequence_c.tick1,fallback_1_c.tick)
+		connector rendezvous root_sequence_c_to_fallback_1_c_success(root_sequence_c.success1,fallback_1_c.success)
+		connector rendezvous root_sequence_c_to_fallback_1_c_failure(root_sequence_c.failure1,fallback_1_c.failure)
+		connector rendezvous root_sequence_c_to_fallback_1_c_running(root_sequence_c.running1,fallback_1_c.running)
+		connector rendezvous root_sequence_c_to_fallback_2_c_tick(root_sequence_c.tick2,fallback_2_c.tick)
+		connector rendezvous root_sequence_c_to_fallback_2_c_success(root_sequence_c.success2,fallback_2_c.success)
+		connector rendezvous root_sequence_c_to_fallback_2_c_failure(root_sequence_c.failure2,fallback_2_c.failure)
+		connector rendezvous root_sequence_c_to_fallback_2_c_running(root_sequence_c.running2,fallback_2_c.running)
+		connector rendezvous sequence_1_c_to_IsSpeedZero_c_tick(sequence_1_c.tick1,IsSpeedZero_c.tick)
+		connector rendezvous sequence_1_c_to_IsSpeedZero_c_success(sequence_1_c.success1,IsSpeedZero_c.success)
+		connector rendezvous sequence_1_c_to_IsSpeedZero_c_failure(sequence_1_c.failure1,IsSpeedZero_c.failure)
+		connector rendezvous sequence_1_c_to_IsSpeedZero_c_running(sequence_1_c.running1,IsSpeedZero_c.running)
+		connector rendezvous sequence_1_c_to_StopTrain_c_tick(sequence_1_c.tick2,StopTrain_c.tick)
+		connector rendezvous sequence_1_c_to_StopTrain_c_success(sequence_1_c.success2,StopTrain_c.success)
+		connector rendezvous sequence_1_c_to_StopTrain_c_failure(sequence_1_c.failure2,StopTrain_c.failure)
+		connector rendezvous sequence_1_c_to_StopTrain_c_running(sequence_1_c.running2,StopTrain_c.running)
+		connector rendezvous sequence_2_c_to_IsStopped_c_tick(sequence_2_c.tick1,IsStopped_c.tick)
+		connector rendezvous sequence_2_c_to_IsStopped_c_success(sequence_2_c.success1,IsStopped_c.success)
+		connector rendezvous sequence_2_c_to_IsStopped_c_failure(sequence_2_c.failure1,IsStopped_c.failure)
+		connector rendezvous sequence_2_c_to_IsStopped_c_running(sequence_2_c.running1,IsStopped_c.running)
+		connector rendezvous sequence_2_c_to_OpenDoor_c_tick(sequence_2_c.tick2,OpenDoor_c.tick)
+		connector rendezvous sequence_2_c_to_OpenDoor_c_success(sequence_2_c.success2,OpenDoor_c.success)
+		connector rendezvous sequence_2_c_to_OpenDoor_c_failure(sequence_2_c.failure2,OpenDoor_c.failure)
+		connector rendezvous sequence_2_c_to_OpenDoor_c_running(sequence_2_c.running2,OpenDoor_c.running)
+		connector rendezvous sequence_3_c_to_IsDoorClosed_c_tick(sequence_3_c.tick1,IsDoorClosed_c.tick)
+		connector rendezvous sequence_3_c_to_IsDoorClosed_c_success(sequence_3_c.success1,IsDoorClosed_c.success)
+		connector rendezvous sequence_3_c_to_IsDoorClosed_c_failure(sequence_3_c.failure1,IsDoorClosed_c.failure)
+		connector rendezvous sequence_3_c_to_IsDoorClosed_c_running(sequence_3_c.running1,IsDoorClosed_c.running)
+		connector rendezvous sequence_3_c_to_Speedup_c_tick(sequence_3_c.tick2,Speedup_c.tick)
+		connector rendezvous sequence_3_c_to_Speedup_c_success(sequence_3_c.success2,Speedup_c.success)
+		connector rendezvous sequence_3_c_to_Speedup_c_failure(sequence_3_c.failure2,Speedup_c.failure)
+		connector rendezvous sequence_3_c_to_Speedup_c_running(sequence_3_c.running2,Speedup_c.running)
+		connector rendezvous sequence_4_c_to_IsSpeedPositive_c_tick(sequence_4_c.tick1,IsSpeedPositive_c.tick)
+		connector rendezvous sequence_4_c_to_IsSpeedPositive_c_success(sequence_4_c.success1,IsSpeedPositive_c.success)
+		connector rendezvous sequence_4_c_to_IsSpeedPositive_c_failure(sequence_4_c.failure1,IsSpeedPositive_c.failure)
+		connector rendezvous sequence_4_c_to_IsSpeedPositive_c_running(sequence_4_c.running1,IsSpeedPositive_c.running)
+		connector rendezvous sequence_4_c_to_Speeddown_c_tick(sequence_4_c.tick2,Speeddown_c.tick)
+		connector rendezvous sequence_4_c_to_Speeddown_c_success(sequence_4_c.success2,Speeddown_c.success)
+		connector rendezvous sequence_4_c_to_Speeddown_c_failure(sequence_4_c.failure2,Speeddown_c.failure)
+		connector rendezvous sequence_4_c_to_Speeddown_c_running(sequence_4_c.running2,Speeddown_c.running)
+
+		connector rendezvous fallback_1_c_to_sequence_1_c_tick(fallback_1_c.tick1,sequence_1_c.tick)
+		connector rendezvous fallback_1_c_to_sequence_1_c_success(fallback_1_c.success1,sequence_1_c.success)
+		connector rendezvous fallback_1_c_to_sequence_1_c_failure(fallback_1_c.failure1,sequence_1_c.failure)
+		connector rendezvous fallback_1_c_to_sequence_1_c_running(fallback_1_c.running1,sequence_1_c.running)
+		connector rendezvous fallback_1_c_to_sequence_2_c_tick(fallback_1_c.tick2,sequence_2_c.tick)
+		connector rendezvous fallback_1_c_to_sequence_2_c_success(fallback_1_c.success2,sequence_2_c.success)
+		connector rendezvous fallback_1_c_to_sequence_2_c_failure(fallback_1_c.failure2,sequence_2_c.failure)
+		connector rendezvous fallback_1_c_to_sequence_2_c_running(fallback_1_c.running2,sequence_2_c.running)
+		connector rendezvous fallback_2_c_to_sequence_3_c_tick(fallback_2_c.tick1,sequence_3_c.tick)
+		connector rendezvous fallback_2_c_to_sequence_3_c_success(fallback_2_c.success1,sequence_3_c.success)
+		connector rendezvous fallback_2_c_to_sequence_3_c_failure(fallback_2_c.failure1,sequence_3_c.failure)
+		connector rendezvous fallback_2_c_to_sequence_3_c_running(fallback_2_c.running1,sequence_3_c.running)
+		connector rendezvous fallback_2_c_to_sequence_4_c_tick(fallback_2_c.tick2,sequence_4_c.tick)
+		connector rendezvous fallback_2_c_to_sequence_4_c_success(fallback_2_c.success2,sequence_4_c.success)
+		connector rendezvous fallback_2_c_to_sequence_4_c_failure(fallback_2_c.failure2,sequence_4_c.failure)
+		connector rendezvous fallback_2_c_to_sequence_4_c_running(fallback_2_c.running2,sequence_4_c.running)
+
+		connector single root_sequence_tick(root_sequence_c.tick)
+		connector single root_sequence_success(root_sequence_c.success)
+		connector single root_sequence_failure(root_sequence_c.failure)
+		connector single root_sequence_running(root_sequence_c.running)
+	end
+
+	component system sys
+
+end

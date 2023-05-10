@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<root name="example2">
+  <BehaviorTree ID="MainTree" name="maintree">
+    <Sequence name="root_sequence">
+      <Fallback name="fallback_1">
+	<Sequence name="sequence_1">
+          <Condition ID="speed"  name="IsSpeedZero" var="speed"  guard="speed==0"/>
+          <Action ID="stop"  name="StopTrain" var="stop" action="stop=1"/>
+	</Sequence>
+	<Sequence name="sequence_2">
+	  <Condition ID="stop" name="IsStopped" var="stop" guard="stop==1"/>
+	  <Action ID="door" name="OpenDoor" var="door" action="door=1"/>
+	</Sequence>
+      </Fallback>
+      <Fallback name="fallback_2">
+	<Sequence name="sequence_3">
+          <Condition ID="door"  name="IsDoorClosed" var="door" guard="door==0"/>
+          <Action ID="speed"  name="Speedup" var="speed"  action="speed=speed+1"/>
+	</Sequence>
+	<Sequence name="sequence_4">
+	  <Condition ID="speed" name="IsSpeedPositive" var="speed" guard="speed>0"/>
+	  <Action ID="speed" name="Speeddown" var="speed" action="speed=speed-1"/>
+	</Sequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+</root>
